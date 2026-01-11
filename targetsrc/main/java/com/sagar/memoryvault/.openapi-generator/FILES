@@ -1,0 +1,13 @@
+.openapi-generator-ignore
+README.md
+pom.xml
+src/main/java/com/sagar/memoryvault/api/ApiUtil.java
+src/main/java/com/sagar/memoryvault/api/AuthApi.java
+src/main/java/com/sagar/memoryvault/api/DefaultApi.java
+src/main/java/com/sagar/memoryvault/api/ErrorResponse.java
+src/main/java/com/sagar/memoryvault/api/Image.java
+src/main/java/com/sagar/memoryvault/api/LoginRequest.java
+src/main/java/com/sagar/memoryvault/api/Memory.java
+src/main/java/com/sagar/memoryvault/api/MemoryApi.java
+src/main/java/com/sagar/memoryvault/api/Mood.java
+src/main/java/com/sagar/memoryvault/api/SignUpRequest.java

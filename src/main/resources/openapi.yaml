@@ -1,0 +1,316 @@
+openapi: 3.1.0
+info:
+  title: MemoryVault API
+  version: 1.0.0
+
+tags:
+  - name: Auth
+    description: User authentication
+  - name: Memories
+    description: Memories
+
+
+paths:
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login user
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+
+      responses:
+        '200':
+          description: Login Successful
+        '404':
+          description: User Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/sign-up:
+    post:
+      tags: [Auth]
+      summary: Register new users
+      operationId: signUpUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpRequest'
+      responses:
+        '200':
+          description: User registered successfully
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request timed out server took to long
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/memories:
+    post:
+      security:
+        - jwtAuth: []
+      summary: Add new memory
+      operationId: addMemory
+      tags: [Memory]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemoryDTO'
+      responses:
+        '200':
+          description: Memory added successfully
+        '401':
+          description: Not authorized to add memory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '406':
+          description: Unacceptable memory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: Get all the memories
+      operationId: getMemories
+      tags: [Memory]
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: List of all the memories of user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MemoryDTO'
+  /api/memories/{memoryId}:
+    delete:
+      summary: Delete user memory
+      operationId: deleteMemories
+      tags: [Memory]
+      security:
+        - jwtAuth: []
+      parameters:
+        - in: path
+          name: memoryId
+          schema:
+            type: string
+          required: true
+          description: Unique id of memory to delete
+      responses:
+        '200':
+          description: memory deleted successfully
+        '404':
+          description: Memory not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized access to memory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update memory
+      operationId: updateMemory
+      tags: [Memory]
+      security:
+        - jwtAuth: []
+      parameters:
+        - in: path
+          name: memoryId
+          required: true
+          schema:
+            type: string
+          description:  Unique id of memory to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemoryDTO'
+
+      responses:
+        '200':
+          description: Update successful
+        '404':
+          description: Memory not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+
+
+components:
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ErrorResponse:
+      type: object
+      description: Represent a error sent from server to client
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+
+
+    SignUpRequest:
+      type: object
+      description: Represent a sign up request from new user
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      example:
+        username: "Devil Hunter"
+        email: "Devil@Hell.com"
+        password: "Devil123"
+
+    LoginRequest:
+      type: object
+      description: Represent login request from existing user
+      required:
+        - username
+        - password
+      properties:
+        username:
+            type: string
+        password:
+            type: string
+      example:
+          username: "Devil Hunter"
+          password: "Devil123"
+
+    MemoryDTO:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - mood
+      properties:
+        id:
+          type: string
+          description: Unique id for the memory
+          example: '123sdgt1315'
+        title:
+          type: string
+          description: Short title for the memory
+          example: "First Day at New Job"
+        description:
+          type: string
+          description: Detailed description of memory
+          example: "Started my new role as a backend developer and met the team."
+        mood:
+          $ref: '#/components/schemas/Mood'
+        tags:
+          type: array
+          description: Optional labels used for categorizing or searching memories.
+          items:
+            type: string
+        images:
+          type: array
+          description: 0 or more images associated with memory
+          items:
+            $ref: '#/components/schemas/Image'
+      example:
+        id: "mem_8f3a21c9"
+        title: "First Day at New Job"
+        description: "Started my new role as a backend developer and met the team."
+        mood: "happy"
+        tags:
+          - career
+          - milestone
+
+    Image:
+      type: object
+      description: Image associated with a memory.
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Publicly accessible image URL.
+          example: "https://cdn.example.com/memories/mem_8f3a21c9/photo1.jpg"
+        caption:
+          type: string
+          description: Optional caption for the image.
+          example: "Team lunch on my first day"
+        width:
+          type: integer
+          example: 1024
+        height:
+          type: integer
+          example: 768
+
+    Mood:
+      type: string
+      description: Represents mood field memory
+      enum:
+        -  HAPPY
+        -  SAD
+        -  CALM
+        -  DARK
+        -  HOPEFUL
+        -  CHAOTIC
+        -  ANGRY
+
+
+
+
+
+
+
+
+
+
+
+
+
